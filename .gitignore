@@ -1,5 +1,5 @@
-# don't include the starter code
-given
+# don't include my workspace settings
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -28,18 +28,18 @@ def main(
     write_csv(csvs, drop_duplicate_rows)
 
 
-def validate_paths(paths: List[Path]) -> None:
+def validate_paths(paths: List[Path]) -> bool:
     '''
     Ensures the paths are valid and raises errors if not.
 
     Args:
         input (List[Path]) : the paths to the .csv files to be combined.
     Returns:
-        None
+        bool : whether or not the paths are valid.
     '''
-    # Typer validates input type, no need to do it here
-
     # List validation
+    if not isinstance(paths, List):
+        sys.exit(f'Input must be of type List. Type {type(paths)} given.\n')
     if len(paths) < 2:
         sys.exit(
             f'Cannot combine less than 2 files. {len(paths)} file given.\n')
@@ -48,12 +48,17 @@ def validate_paths(paths: List[Path]) -> None:
     invalid_paths = []
     not_files = []
     for path in paths:
-        if not os.path.exists(path):
-            sys.stderr.write(f'Path "./{path}" does not exist.\n')
+        try:
+            if not os.path.exists(path):
+                sys.stderr.write(f'Path "./{path}" does not exist.\n')
+                invalid_paths.append(path)
+            elif not os.path.isfile(path):
+                sys.stderr.write(f'Object at path "./{path}" is not a file.\n')
+                not_files.append(path)
+        except Exception:
+            sys.stderr.write(
+                f'Path "./{path}" must be of type Path. Type {type(path)} given.\n')
             invalid_paths.append(path)
-        if not os.path.isfile(path):
-            sys.stderr.write(f'Object at path "./{path}" is not a file.\n')
-            not_files.append(path)
 
     # Exit with errors if any were found
     err_str = ""
@@ -63,6 +68,9 @@ def validate_paths(paths: List[Path]) -> None:
         err_str += f"\t{len(not_files)} non-file object(s) found."
     if err_str:
         sys.exit(f"\n{err_str}\n")
+
+    return True
+
 
 def read_file(path: Path) -> pd.DataFrame:
     '''
@@ -87,7 +95,7 @@ def read_file(path: Path) -> pd.DataFrame:
 
 def write_csv(
     files: List[pd.DataFrame],
-    remove_duplicate_rows: bool
+    remove_duplicate_rows: bool = False
 ) -> None:
     '''
     Writes DataFrames from a List to a single combined csv. Prints to stdout.
@@ -98,12 +106,24 @@ def write_csv(
     Returns:
         None
     '''
+    if not isinstance(files, List):
+        sys.exit(
+            f"Argument 'files' must be of type List. Type {type(files)} given.\n")
+    if not len(files) > 1:
+        sys.exit(
+            f"Argument 'files' must be of length 2 or greater. Length {len(files)} given.\n")
+    for i, f in enumerate(files):
+        if not isinstance(f, pd.DataFrame):
+            sys.exit(
+                f"Argument 'files' must contain only DataFrames. Object {repr(f)} found at index {i}.\n")
+
     df = pd.concat(files)
 
     if remove_duplicate_rows:
         df.drop_duplicates(inplace=True)
 
-    sys.stdout.write(df.to_csv(index=False))
+    csv = df.to_csv(index=False)
+    sys.stdout.write(csv)
 
 
 if __name__ == "__main__":

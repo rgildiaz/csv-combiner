@@ -7,13 +7,13 @@ Written for PMG Python Challenge - Fall 2022
 ## Usage
 
 ```bash
-$ python ./csv-combiner.py [OPTIONS] FILES [...FILES]
+$ python ./src/csv-combiner.py [OPTIONS] FILES [...FILES]
 ```
 
 ### Combine files
 
 ```bash
-$ python ./csv-combiner.py ./fixtures/accessories.csv ./fixtures/clothing.csv > combined.csv
+$ python ./src/csv-combiner.py ./fixtures/accessories.csv ./fixtures/clothing.csv > combined.csv
 ```
 
 Given two input files named `clothing.csv` and `accessories.csv`:
@@ -46,7 +46,7 @@ csv-combiner can also combine more than two files.
 To drop duplicates in the output CSV, use the `-d` option:
 
 ```bash
-$ python ./csv-combiner.py ./fixtures/accessories1.csv ./fixtures/accessories2.csv -d > combined.csv
+$ python ./src/csv-combiner.py ./fixtures/accessories1.csv ./fixtures/accessories2.csv -d > combined.csv
 ```
 
 Given two input files named `accessories1.csv` and `accessories2.csv`:

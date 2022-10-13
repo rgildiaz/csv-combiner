@@ -1,11 +1,11 @@
-import csv
+import pandas as pd
 import sys
 import os
 from typing import List
 from pathlib import Path
 
 
-def validate_paths(paths: List[Path]) -> None:
+def validate_paths(paths: List[Path], verbose: bool = False) -> None:
     '''
     Ensures the paths are valid and raises errors if not.
 
@@ -18,7 +18,8 @@ def validate_paths(paths: List[Path]) -> None:
 
     # List validation
     if len(paths) < 2:
-        sys.exit(f'Cannot combine less than 2 files. {len(paths)} file given.\n')
+        sys.exit(
+            f'Cannot combine less than 2 files. {len(paths)} file given.\n')
 
     # Path/file validation
     invalid_paths = []
@@ -34,48 +35,53 @@ def validate_paths(paths: List[Path]) -> None:
     # Exit with errors if any were found
     err_str = ""
     if invalid_paths:
-        err_str += f"\n{len(invalid_paths)} invalid path(s) found."
+        err_str += f"\t{len(invalid_paths)} invalid path(s) found."
     if not_files:
-        err_str += f"\n{len(not_files)} non-file object(s) found."
+        err_str += f"\t{len(not_files)} non-file object(s) found."
     if err_str:
         sys.exit(f"\n{err_str}\n")
 
+    if verbose:
+        path_list = "\n\t".join([str(p) for p in paths])
+        sys.stdout.write(f'\nPaths validated: \n\t{path_list}\n')
 
-def read_file(path: Path) -> csv.DictReader:
+
+def read_file(path: Path) -> pd.DataFrame:
     '''
-    Creates a csv reader object given a path to a .csv file. Exits with errors if file at path is not a CSV or if it cannot be opened.
+    Creates a DataFrame given a .csv at the path.
 
     Args:
         path (Path) : the path to the .csv file to be read.
     Returns:
-        csv.DictReader : the generated csv reader. 
+        pd.DataFrame : the generated DataFrame. 
     '''
     try:
-        with open(path, newline="") as fd:
-            try:
-                reader = csv.reader(fd)
-            except Exception:
-                sys.exit(f'File at path "{str(path)}" is not .csv.')
-    except Exception:
-        sys.exit(f'File at path "{str(path)}" cannot be opened.')
+        df = pd.read_csv(path)
+    except pd.errors.ParserError as e:
+        sys.exit(f'File at path "{path}" cannot be parsed:\n\t{e}')
+    except Exception as e:
+        sys.exit(f'Error while reading file at path "{path}":\n\t{e}')
 
-    return reader
+    df['filename'] = path.name
+
+    return df
 
 
 def write_csv(
-    files: List[csv.DictReader],
-    remove_duplicate_rows: bool = False
+    files: List[pd.DataFrame],
+    remove_duplicate_rows: bool
 ) -> None:
     '''
-    Writes .csv files from a List to a single combined file.
+    Writes DataFrames from a List to a single combined csv. Prints to stdout.
 
     Args:
-        files (List[csv.DictReader]) : the files to be written.
-        remove_duplicate_rows (bool) : removes duplicate rows from generated CSV. Default value is False.
-    Returns:
-        csv.DictReader : the generated csv reader. 
+        files (List[pd.DataFrame]) : the DataFrames to combine.
+        outfile (Path): the location to write the new CSV to.
+        remove_duplicate_rows (bool) : removes duplicate rows from generated CSV.
     '''
+    df = pd.concat(files)
 
+    if remove_duplicate_rows:
+        df.drop_duplicates(inplace=True)
 
-if __name__ == "__main__":
-    pass
+    sys.stdout.write(df.to_csv(index=False))

@@ -1,11 +1,34 @@
+import typer
+from typing import List
+from pathlib import Path
 import pandas as pd
 import sys
 import os
-from typing import List
-from pathlib import Path
 
 
-def validate_paths(paths: List[Path], verbose: bool = False) -> None:
+app = typer.Typer()
+
+
+@app.command()
+def main(
+    files: List[Path] = typer.Argument(..., help="Files to be combined."),
+    drop_duplicate_rows: bool = typer.Option(
+        False, "--drop-duplicates", "-d", help="Drop duplicate rows in output.")
+):
+    """
+    Combine multiple .csv's into a single file!
+    """
+    validate_paths(files)
+
+    csvs = []
+    for f in files:
+        csv = read_file(f)
+        csvs.append(csv)
+
+    write_csv(csvs, drop_duplicate_rows)
+
+
+def validate_paths(paths: List[Path]) -> None:
     '''
     Ensures the paths are valid and raises errors if not.
 
@@ -41,11 +64,6 @@ def validate_paths(paths: List[Path], verbose: bool = False) -> None:
     if err_str:
         sys.exit(f"\n{err_str}\n")
 
-    if verbose:
-        path_list = "\n\t".join([str(p) for p in paths])
-        sys.stdout.write(f'\nPaths validated: \n\t{path_list}\n')
-
-
 def read_file(path: Path) -> pd.DataFrame:
     '''
     Creates a DataFrame given a .csv at the path.
@@ -76,8 +94,9 @@ def write_csv(
 
     Args:
         files (List[pd.DataFrame]) : the DataFrames to combine.
-        outfile (Path): the location to write the new CSV to.
         remove_duplicate_rows (bool) : removes duplicate rows from generated CSV.
+    Returns:
+        None
     '''
     df = pd.concat(files)
 
@@ -85,3 +104,7 @@ def write_csv(
         df.drop_duplicates(inplace=True)
 
     sys.stdout.write(df.to_csv(index=False))
+
+
+if __name__ == "__main__":
+    app()

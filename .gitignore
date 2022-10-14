@@ -1,6 +1,9 @@
 # don't include my workspace settings
 .vscode
 
+# don't include the large files
+tests/fixtures/large/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

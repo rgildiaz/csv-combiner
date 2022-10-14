@@ -31,6 +31,26 @@ def real_paths():
 
 
 @pytest.fixture
+def dif_columns_paths():
+    paths = [
+        Path("./tests/fixtures/clothing.csv")
+    ]
+    path_str = "./tests/fixtures/dif_columns.csv"
+    if not os.path.exists(path_str):
+        path = generate_csv(
+            path=Path("./tests/fixtures/"),
+            fname="dif_columns.csv",
+            rows=20
+        )
+    else:
+        path = Path(path_str)
+
+    paths.append(path)
+
+    return paths
+
+
+@pytest.fixture
 def large_csv_paths() -> List[Path]:
     '''Returns a list of paths to two .csvs that are over 2GB.'''
     # Create dir if it doesn't already exist
@@ -53,25 +73,33 @@ def large_csv_paths() -> List[Path]:
     else:
         for fd in dir_list:
             os.remove(path / fd)
-        
+
         generated_csvs = []
         for i in range(LARGE_CSV_COUNT - num_large_files):
-            csv = generate_large_csv(path, f"lg_test{i + num_large_files}.csv")
+            csv = generate_csv(
+                path=path,
+                fname=f"lg_test{i + num_large_files}.csv",
+                rows=2 * (10**8)
+            )
             generated_csvs.append(csv)
         return generated_csvs
 
 
-def generate_large_csv(path: Path, fname: str) -> List[Path]:
-    '''Generates a large CSV at the path named fname'''
+def generate_csv(
+    path: Path,
+    fname: str,
+    rows: int
+) -> Path:
+    '''Generates a CSV at the path named fname with designated number of rows'''
     with open(f'{str(path)}/{fname}', 'x', newline='') as fd:
         fieldnames = ['email_hash', 'dummy_hash']
         writer = csv.DictWriter(fd, fieldnames=fieldnames)
 
         writer.writeheader()
         # write 12 characters per row for 200,000,000 rows >= 2.4 GB
-        for _ in range(2 * (10**8)):
+        for _ in range(rows):
             writer.writerow({
                 'email_hash': random.randint(10**5, 999999),
                 'dummy_hash': random.randint(10**5, 999999)
             })
-    return f'{str(path)}/{fname}'
+    return Path(f'{str(path)}/{fname}')

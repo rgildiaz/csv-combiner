@@ -30,7 +30,7 @@ def main(
 
 def validate_paths(paths: List[Path]) -> bool:
     '''
-    Ensures the paths are valid and raises errors if not.
+    Ensures the paths are valid and exits with errors if not.
 
     Args:
         input (List[Path]) : the paths to the .csv files to be combined.

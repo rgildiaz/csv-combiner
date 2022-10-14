@@ -4,7 +4,6 @@ import csv
 import random
 import os
 import pytest
-import pandas as pd
 
 LARGE_CSV_COUNT = 2
 LARGE_CSV_DIR = './tests/fixtures/large'
@@ -26,6 +25,16 @@ def real_paths():
         "./tests/fixtures/clothing.csv",
         "./tests/fixtures/accessories.csv",
         "./tests/fixtures/household_cleaners.csv"
+    ]
+    return [Path(i) for i in paths]
+
+
+@pytest.fixture
+def real_paths_small():
+    paths = [
+        "tests/fixtures/small/accessories_small.csv",
+        "tests/fixtures/small/clothing_small.csv",
+        "tests/fixtures/small/household_cleaners_small.csv"
     ]
     return [Path(i) for i in paths]
 

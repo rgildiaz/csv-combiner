@@ -16,6 +16,6 @@ def test_nonpath_input(real_paths):
         assert e.type == SystemExit
         assert e.value.code == 42
 
-def test_large_files(large_csv_paths):
+def _test_large_files(large_csv_paths):
     for i in large_csv_paths:
         read_file(i)

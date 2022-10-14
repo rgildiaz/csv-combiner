@@ -25,7 +25,8 @@ def main(
         csv = read_file(f)
         csvs.append(csv)
 
-    write_csv(csvs, drop_duplicate_rows)
+    csv = write_csv(csvs, drop_duplicate_rows)
+    sys.stdout.write(csv)
 
 
 def validate_paths(paths: List[Path]) -> bool:
@@ -96,7 +97,7 @@ def read_file(path: Path) -> pd.DataFrame:
 def write_csv(
     files: List[pd.DataFrame],
     remove_duplicate_rows: bool = False
-) -> None:
+) -> str:
     '''
     Writes DataFrames from a List to a single combined csv. Prints to stdout.
 
@@ -123,7 +124,7 @@ def write_csv(
         df.drop_duplicates(inplace=True)
 
     csv = df.to_csv(index=False)
-    sys.stdout.write(csv)
+    return csv
 
 
 if __name__ == "__main__":

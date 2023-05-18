@@ -1,5 +1,6 @@
 # don't include my workspace settings
 .vscode
+.DS_Store
 
 # don't include the large files
 tests/fixtures/large/*
